@@ -271,6 +271,6 @@ fun RealGameScreen(playerName: String, selectedGenre: String, navController: Nav
 }
 
 suspend fun fetchRandomTrack(genre: String): Track {
-    val response: HttpResponse = client.get("https://namethattune-2fcad176bcaa.herokuapp.com/deezer/randomTrack?genre=$genre")
+    val response: HttpResponse = client.get("https://nametunes.onrender.com/deezer/randomTrack?genre=$genre")
     return response.body()
 }

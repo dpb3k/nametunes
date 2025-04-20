@@ -58,7 +58,7 @@ data class LeaderboardEntry(
 )
 
 suspend fun fetchLeaderboard(): List<LeaderboardEntry> {
-    val url = "https://namethattune-2fcad176bcaa.herokuapp.com/api/getLeaderboard" // Update with the correct URL
+    val url = "https://nametunes.onrender.com/api/getLeaderboard" // Update with the correct URL
     val response: HttpResponse = client.get(url)
     val leaderboard: List<LeaderboardEntry> = Json { ignoreUnknownKeys = true }
         .decodeFromString(response.bodyAsText())  // Deserialize the response while ignoring unknown keys
@@ -68,7 +68,7 @@ suspend fun fetchLeaderboard(): List<LeaderboardEntry> {
 
 suspend fun submitScore(playerName: String, genre: String, score: Int) {
     try {
-        val url = "https://namethattune-2fcad176bcaa.herokuapp.com/api/submitScore" // Make sure this is the correct URL for your backend
+        val url = "https://nametunes.onrender.com/api/submitScore" // Make sure this is the correct URL for your backend
         client.post(url) {
             contentType(ContentType.Application.Json)
             setBody(

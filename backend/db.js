@@ -1,15 +1,13 @@
-const { Client } = require('pg'); // Assuming you're using the 'pg' library
+const { Pool } = require('pg');
 
-// Use DATABASE_URL from Heroku's environment variables
-const client = new Client({
-  connectionString: process.env.DATABASE_URL, // Use the Heroku provided DATABASE_URL
-  ssl: {
-    rejectUnauthorized: false // Required by Heroku
-  }
+// Ensure this is the correct connection string provided by Render
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL, // This is the URL that should be set in Render's environment variables
+    ssl: {
+        rejectUnauthorized: false // This might be necessary when using Render's hosted Postgres
+    }
 });
 
-client.connect()
-  .then(() => console.log('Connected to the database'))
-  .catch((err) => console.error('Connection error', err.stack));
-
-module.exports = client;
+module.exports = {
+    query: (text, params) => pool.query(text, params),
+};
