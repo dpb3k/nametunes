@@ -8,6 +8,11 @@ const pool = new Pool({
     }
 });
 
+pool.query('SELECT NOW()')
+    .then(res => console.log(res.rows[0]))
+    .catch(err => console.log('Error connecting to database', err));
+
+
 module.exports = {
     query: (text, params) => pool.query(text, params),
 };
