@@ -36,7 +36,6 @@ import androidx.compose.ui.platform.LocalContext
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import android.media.MediaPlayer
-import com.example.namethattune.components.SingleBouncingNote
 
 val client = HttpClient(CIO) {
     install(ContentNegotiation) {
@@ -77,9 +76,6 @@ fun GameScreen(navController: NavController) {
     // Column to display the UI
     Box(modifier = Modifier.fillMaxSize()
         .background(Color(0xFF1B4B43))) {
-        // Add the bouncing notes here as background
-        SingleBouncingNote()
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
