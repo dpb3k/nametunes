@@ -15,8 +15,8 @@
 
 ## Screenshots
 
-![Leaderboard Screenshot](app.png)
-*(Replace with your actual screenshot path)*
+<img src="app.png" alt="Leaderboard Screenshot" width="120" height="400"/>
+
 
 ---
 
