@@ -15,7 +15,7 @@
 
 ## Screenshots
 
-<img src="app.png" alt="Leaderboard Screenshot" width="120" height="400"/>
+<img src="app.png" alt="Leaderboard Screenshot" width="220" height="400"/>
 
 
 ---
