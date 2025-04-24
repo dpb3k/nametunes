@@ -1,6 +1,6 @@
-# NameThatTune
+# NameTunes
 
-**NameThatTune** is a music-based trivia app that tests your ability to identify songs based on short audio snippets. Players are presented with a song clip and must guess the correct track from a list of multiple choices.
+**NameTunes** is a music-based trivia app that tests your ability to identify songs based on short audio snippets. Players are presented with a song clip and must guess the correct track from a list of multiple choices.
 
 ---
 
@@ -15,7 +15,7 @@
 
 ## Screenshots
 
-![Leaderboard Screenshot](./path-to-screenshot.png)
+![Leaderboard Screenshot](app.png)
 *(Replace with your actual screenshot path)*
 
 ---
