@@ -36,6 +36,9 @@ import androidx.compose.ui.platform.LocalContext
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import android.media.MediaPlayer
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 
 val client = HttpClient(CIO) {
     install(ContentNegotiation) {
@@ -50,31 +53,16 @@ fun GameScreen(navController: NavController) {
     var selectedGenre by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    var mediaPlayer: MediaPlayer? = null
+
+    // Get the keyboard controller to hide the keyboard
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // Validate player name and genre
     val isValidInput = playerName.isNotEmpty() && playerName.length <= 12 && selectedGenre.isNotEmpty()
 
-    // Start the theme song when the home screen is displayed
-    LaunchedEffect(Unit) {
-        mediaPlayer = MediaPlayer.create(context, R.raw.game_theme1) // Load the theme song
-        mediaPlayer?.start() // Start the music
-
-        // Optional: Set looping if you want it to keep playing in a loop
-        mediaPlayer?.isLooping = true
-        mediaPlayer?.setVolume(0.8f, 0.8f) // Values range from 0.0f to 1.0f for each channel
-    }
-
-    // Stop the theme song when navigating away from the screen (cleanup)
-    DisposableEffect(Unit) {
-        onDispose {
-            mediaPlayer?.stop() // Stop the music
-            mediaPlayer?.release() // Release resources
-        }
-    }
-
     // Column to display the UI
-    Box(modifier = Modifier.fillMaxSize()
+    Box(modifier = Modifier
+        .fillMaxSize()
         .background(Color(0xFF1B4B43))) {
         Column(
             modifier = Modifier
@@ -92,6 +80,8 @@ fun GameScreen(navController: NavController) {
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.width(12.dp))
+
+                // Outlined TextField with keyboard actions
                 OutlinedTextField(
                     value = playerName,
                     onValueChange = { playerName = it },
@@ -106,6 +96,15 @@ fun GameScreen(navController: NavController) {
                         focusedBorderColor = Color.White,
                         unfocusedBorderColor = Color.White,
                         cursorColor = Color.White
+                    ),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done // Set the action to "Done" when Enter is pressed
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            // Hide the keyboard when "Done" (Enter) is pressed
+                            keyboardController?.hide()
+                        }
                     )
                 )
             }

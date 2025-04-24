@@ -1,4 +1,6 @@
 [versions]
+accompanistDropdown = "0.23.0"
+accompanistPermissions = "<version>"
 accompanistSystemuicontroller = "0.33.2-alpha"
 activityComposeVersion = "1.10.1"
 agp = "8.9.1"
@@ -26,6 +28,8 @@ ui = "1.7.8"
 media3Ui = "1.6.0"
 
 [libraries]
+accompanist-dropdown = { module = "com.google.accompanist:accompanist-dropdown", version.ref = "accompanistDropdown" }
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 androidx-activity-compose-v1101 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

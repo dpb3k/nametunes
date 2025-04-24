@@ -1,7 +1,10 @@
 package com.example.namethattune
 
+import android.content.Context
+import android.media.MediaPlayer
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -45,9 +48,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+//import androidx.compose.material3.start
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.json.Json
+import androidx.core.content.edit
+import kotlinx.serialization.encodeToString
 
 @Serializable
 data class LeaderboardEntry(
@@ -63,6 +71,24 @@ suspend fun fetchLeaderboard(): List<LeaderboardEntry> {
     val leaderboard: List<LeaderboardEntry> = Json { ignoreUnknownKeys = true }
         .decodeFromString(response.bodyAsText())  // Deserialize the response while ignoring unknown keys
     return leaderboard
+}
+
+fun cacheLeaderboard(context: Context, leaderboard: List<LeaderboardEntry>) {
+    val sharedPrefs = context.getSharedPreferences("LeaderboardCache", Context.MODE_PRIVATE)
+    // The type is inferred automatically here because of the @Serializable annotation on LeaderboardEntry
+    val jsonString = Json.encodeToString(leaderboard) // No need to specify type explicitly
+    sharedPrefs.edit().putString("leaderboard", jsonString).apply() // Save to SharedPreferences
+}
+
+
+fun loadLeaderboardCache(context: Context): List<LeaderboardEntry> {
+    val sharedPrefs = context.getSharedPreferences("LeaderboardCache", Context.MODE_PRIVATE)
+    val jsonString = sharedPrefs.getString("leaderboard", null)
+    return if (jsonString != null) {
+        Json.decodeFromString(jsonString) // Convert JSON string back to list
+    } else {
+        emptyList() // Return empty list if no cache is found
+    }
 }
 
 
@@ -86,49 +112,100 @@ suspend fun submitScore(playerName: String, genre: String, score: Int) {
 
 @Composable
 fun LeaderboardScreen() {
-    val leaderboardEntries by remember { mutableStateOf(mutableListOf<LeaderboardEntry>()) }
+    var mediaPlayer: MediaPlayer? = null
+    val context = LocalContext.current // Get the current context
+    val leaderboardEntries = remember { mutableStateListOf<LeaderboardEntry>() } // Use remember to persist data
     var isLoading by remember { mutableStateOf(true) }
 
-    LaunchedEffect(true) {
-        try {
-            leaderboardEntries.clear()
-            leaderboardEntries.addAll(fetchLeaderboard()) // Fetch leaderboard data
-        } catch (e: Exception) {
-            Log.e("LeaderboardScreen", "Error fetching leaderboard: ${e.message}")
-        } finally {
-            isLoading = false
+    // Start the theme song when the leaderboard screen is displayed
+    LaunchedEffect(Unit) {
+        mediaPlayer = MediaPlayer.create(context, R.raw.game_theme1) // Load the theme song
+        mediaPlayer?.start() // Start the music
+
+        // Optional: Set looping if you want it to keep playing in a loop
+        mediaPlayer?.isLooping = true
+        mediaPlayer?.setVolume(0.1f, 0.1f) // Values range from 0.0f to 1.0f for each channel
+    }
+
+    // Stop the theme song when navigating away from the screen (cleanup)
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer?.stop() // Stop the music
+            mediaPlayer?.release() // Release resources
         }
     }
 
-    // Add padding and make the column scrollable
-    Column(
+    // Use LaunchedEffect to only fetch the data once
+    LaunchedEffect(Unit) {
+        if (leaderboardEntries.isEmpty()) { // Fetch data only if the list is empty
+            try {
+                // Check if cached data is available
+                val cachedLeaderboard = loadLeaderboardCache(context)
+                if (cachedLeaderboard.isNotEmpty()) {
+                    leaderboardEntries.addAll(cachedLeaderboard)
+                    isLoading = false
+                } else {
+                    // Fetch data from API if no cached data
+                    leaderboardEntries.clear()
+                    leaderboardEntries.addAll(fetchLeaderboard()) // Fetch leaderboard data from API
+                    cacheLeaderboard(context, leaderboardEntries) // Cache the fetched data
+                    isLoading = false
+                }
+            } catch (e: Exception) {
+                Log.e("LeaderboardScreen", "Error fetching leaderboard: ${e.message}")
+            }
+        } else {
+            isLoading = false // If data is already loaded, stop the loading spinner
+        }
+    }
+
+    // Set the background image and make it fit the screen
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 24.dp) // Add overall padding for the whole screen
+            .fillMaxSize() // Make the background fill the whole screen
     ) {
-        Text(
-            text = "Leaderboard",
-            fontFamily = PressStart2P,
-            fontSize = 20.sp,
-            color = Color(0xFF00332D),
-            modifier = Modifier.padding(bottom = 16.dp) // Padding for the title
+        // Background image
+        Image(
+            painter = painterResource(id = R.drawable.leaderboard_bg), // Your drawable resource
+            contentDescription = "Leaderboard background",
+            modifier = Modifier
+                .fillMaxSize()  // Ensures the background image covers the full screen size
+                .align(Alignment.Center), // Centers the background image
+            contentScale = ContentScale.Crop // This ensures the image scales to fill the screen without distortion
         )
 
-        LeaderboardHeader() // The header for the leaderboard
+        // The leaderboard content is placed over the background
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 24.dp)
+        ) {
+            Text(
+                text = "Leaderboard",
+                fontFamily = PressStart2P,
+                fontSize = 20.sp,
+                color = Color(0xFF9B59B6),
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
 
-        // Padding between the header and leaderboard rows
-        Spacer(modifier = Modifier.height(12.dp)) // Add space between the header and leaderboard rows
+            LeaderboardHeader() // The header for the leaderboard
 
-        // Show loading indicator while data is loading
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp) // Ensure there's padding at the bottom of the list
-            ) {
-                items(leaderboardEntries) { entry ->
-                    LeaderboardRow(entry = entry)
+            Spacer(modifier = Modifier.height(12.dp)) // Add space between the header and leaderboard rows
+
+            // Show loading indicator while data is loading
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp) // Ensure there's padding at the bottom of the list
+                ) {
+                    items(leaderboardEntries) { entry ->
+                        LeaderboardRow(entry = entry)
+                        Spacer(modifier = Modifier.height(8.dp)) // Add spacing between each entry
+                    }
                 }
             }
         }
@@ -137,7 +214,7 @@ fun LeaderboardScreen() {
 
 @Composable
 fun LeaderboardHeader() {
-    val columnWidths = listOf(60.dp, 120.dp, 60.dp, 80.dp)
+    val columnWidths = listOf(60.dp, 80.dp, 60.dp, 80.dp)
 
     Row(
         modifier = Modifier
@@ -165,7 +242,7 @@ fun LeaderboardHeader() {
 
 @Composable
 fun LeaderboardRow(entry: LeaderboardEntry) {
-    val columnWidths = listOf(60.dp, 120.dp, 60.dp, 80.dp)
+    val columnWidths = listOf(60.dp, 80.dp, 60.dp, 80.dp)
 
     Row(
         modifier = Modifier
@@ -189,7 +266,8 @@ fun LeaderboardRow(entry: LeaderboardEntry) {
                     text = value,
                     fontSize = 10.sp,
                     fontFamily = PressStart2P,
-                    color = Color.White
+                    color = Color.White,
+                    modifier = if (index == 3) Modifier.padding(start = 4.dp) else Modifier
                 )
             }
         }

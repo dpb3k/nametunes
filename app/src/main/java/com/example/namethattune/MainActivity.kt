@@ -236,7 +236,7 @@ fun TopNavBar(onNavigate: (String) -> Unit,
             .fillMaxWidth()
             .background(Color.White)
             .statusBarsPadding() // adds status + nav bar padding
-            .padding(vertical = 20.dp)
+            .padding(vertical = 15.dp)
             .onGloballyPositioned { coordinates ->
                 onHeightMeasured(coordinates.size.height)
             },
@@ -246,7 +246,7 @@ fun TopNavBar(onNavigate: (String) -> Unit,
         listOf("Home", "Game", "Leaderboard", "FAQs").forEach { label ->
             Text(
                 text = label,
-                fontSize = 12.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF00E676),
                 fontFamily = PressStart2P,
@@ -327,7 +327,7 @@ fun WelcomeSection(onRulesClick: () -> Unit, onPlayClick: () -> Unit, onHeightCa
                 onHeightCalculated(it.size.height)
             }
     ) {
-        Spacer(modifier = Modifier.height(190.dp))
+        Spacer(modifier = Modifier.height(100.dp))
         EqualizerVisualizer()
         Text(
             text = "Welcome to",

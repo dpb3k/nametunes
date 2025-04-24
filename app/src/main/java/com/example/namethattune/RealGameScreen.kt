@@ -24,6 +24,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import android.view.ViewGroup.LayoutParams
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.platform.LocalDensity
 import androidx.media3.common.Player
@@ -85,7 +87,7 @@ fun RealGameScreen(playerName: String, selectedGenre: String, navController: Nav
         } else {
             // Handle incorrect answer
             Toast.makeText(context, "Incorrect. The correct answer was ${track?.trackName}", Toast.LENGTH_SHORT).show()
-            correctAnswerText = "Correct Answer: ${track?.trackName}"
+            correctAnswerText = "The song is: ${track?.trackName}"
 
             lives -= 1
 
@@ -201,20 +203,27 @@ fun RealGameScreen(playerName: String, selectedGenre: String, navController: Nav
                 val answerChoices = listOf(track?.trackName ?: "Unknown Song") + additionalTracks.map { it.trackName }
                 val shuffledAnswers = answerChoices.shuffled()
 
-                shuffledAnswers.forEach { answer ->
-                    Button(
-                        onClick = {
-                            selectedAnswer = answer
-                            isAnswerButtonEnabled = false  // Disable buttons after an answer is selected
-                            checkAnswer()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                        enabled = isAnswerButtonEnabled  // Disable button if it's false
-                    ) {
-                        Text(answer, fontFamily = PressStart2P, fontSize = 12.sp, color = Color.Black)
+                // Use LazyColumn for scrollable answers
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp) // Add some padding between the choices
+                ) {
+                    itemsIndexed(shuffledAnswers) { index, answer ->
+                        Button(
+                            onClick = {
+                                selectedAnswer = answer
+                                isAnswerButtonEnabled = false  // Disable buttons after an answer is selected
+                                checkAnswer()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                            enabled = isAnswerButtonEnabled  // Disable button if it's false
+                        ) {
+                            Text(answer, fontFamily = PressStart2P, fontSize = 12.sp, color = Color.Black)
+                        }
                     }
                 }
 
